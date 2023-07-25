@@ -10,7 +10,7 @@ import {
   useNear,
   CommitButton,
   useAccountId,
-} from "near-social-vm";
+} from "near-flipside-vm";
 import { Nav, OverlayTrigger, Tooltip } from "react-bootstrap";
 import RenameModal from "../components/Editor/RenameModal";
 import OpenModal from "../components/Editor/OpenModal";

@@ -25,7 +25,7 @@ import {
   useNear,
   utils,
   EthersProviderContext,
-} from "near-social-vm";
+} from "near-flipside-vm";
 import Big from "big.js";
 import { NavigationWrapper } from "./components/navigation/NavigationWrapper";
 import { NetworkId, Widgets } from "./data/widgets";

@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Widget, useNear, useAccount } from "near-social-vm";
+import { Widget, useNear, useAccount } from "near-flipside-vm";
 import styled from "styled-components";
 import { User } from "../../icons/User";
 import { LogOut } from "../../icons/LogOut";

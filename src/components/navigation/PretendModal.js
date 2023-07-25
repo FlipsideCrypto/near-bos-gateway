@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Modal from "react-bootstrap/Modal";
-import { Widget, useAccount } from "near-social-vm";
+import { Widget, useAccount } from "near-flipside-vm";
 
 export default function PretendModal(props) {
   const account = useAccount();

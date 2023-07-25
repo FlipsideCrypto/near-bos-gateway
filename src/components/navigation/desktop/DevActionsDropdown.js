@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { Fork } from "../../icons/Fork";
 import { Code } from "../../icons/Code";
-import { useAccount } from "near-social-vm";
+import { useAccount } from "near-flipside-vm";
 import { Diff } from "../../icons/Diff";
 
 const StyledDropdown = styled.div`

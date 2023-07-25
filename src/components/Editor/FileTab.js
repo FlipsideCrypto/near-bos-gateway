@@ -1,6 +1,6 @@
 import { Nav } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
-import { useAccountId, useCache, useNear } from "near-social-vm";
+import { useAccountId, useCache, useNear } from "near-flipside-vm";
 
 export const Filetype = {
   Widget: "widget",
