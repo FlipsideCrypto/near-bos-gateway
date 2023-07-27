@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { MobileMenuButton } from "./MobileMenuButton";
-import { NearSocialLogo } from "../../icons/NearSocialLogo";
+import { FlipsideLogo } from "../../icons/FlipsideLogo";
 import { NotificationWidget } from "../NotificationWidget";
 import { SignInButton } from "../SignInButton";
 
@@ -49,7 +49,7 @@ export function Navigation(props) {
         currentPage={props.currentPage}
       />
       <Link to="/" className="logo-link">
-        <NearSocialLogo />
+        <FlipsideLogo />
       </Link>
       {props.signedIn ? (
         <NotificationWidget

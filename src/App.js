@@ -32,7 +32,7 @@ import { NetworkId, Widgets } from "./data/widgets";
 import { useEthersProviderContext } from "./data/web3";
 
 export const refreshAllowanceObj = {};
-const documentationHref = "https://social.near-docs.io/";
+const documentationHref = "https://docs.near.org/bos";
 
 function App(props) {
   const [connected, setConnected] = useState(false);
