@@ -6,7 +6,7 @@ import "react-bootstrap-typeahead/css/Typeahead.css";
 import "react-bootstrap-typeahead/css/Typeahead.bs5.css";
 import "bootstrap/dist/js/bootstrap.bundle";
 import "App.scss";
-import { HashRouter as Router, Link, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import EditorPage from "./pages/EditorPage";
 import ViewPage from "./pages/ViewPage";
 import { setupWalletSelector } from "@near-wallet-selector/core";
@@ -16,6 +16,7 @@ import { setupSender } from "@near-wallet-selector/sender";
 import { setupHereWallet } from "@near-wallet-selector/here-wallet";
 import { setupMeteorWallet } from "@near-wallet-selector/meteor-wallet";
 import { setupNeth } from "@near-wallet-selector/neth";
+import { setupNightly } from "@near-wallet-selector/nightly";
 import { setupModal } from "@near-wallet-selector/modal-ui";
 import EmbedPage from "./pages/EmbedPage";
 import { sanitizeUrl } from "@braintree/sanitize-url";
@@ -47,9 +48,8 @@ function App(props) {
   const { initNear } = useInitNear();
   const near = useNear();
   const account = useAccount();
-  const accountId = account.accountId;
 
-  const location = window.location;
+  const accountId = account.accountId;
 
   useEffect(() => {
     initNear &&
@@ -67,6 +67,7 @@ function App(props) {
               gas: "300000000000000",
               bundle: false,
             }),
+            setupNightly(),
           ],
         }),
         customElements: {
@@ -80,6 +81,9 @@ function App(props) {
             }
             return <Link {...props} />;
           },
+        },
+        config: {
+          defaultFinality: undefined,
         },
       });
   }, [initNear]);

@@ -2,13 +2,18 @@ import React, { useEffect, useState } from "react";
 import { Widget } from "near-flipside-vm";
 import { useParams } from "react-router-dom";
 import { useQuery } from "../hooks/useQuery";
+import { useHashRouterLegacy } from "../hooks/useHashRouterLegacy";
 
 export default function ViewPage(props) {
+  useHashRouterLegacy();
+
   const { widgetSrc } = useParams();
   const query = useQuery();
   const [widgetProps, setWidgetProps] = useState({});
 
-  const src = widgetSrc || props.widgets.default;
+  const src =
+    widgetSrc || window?.InjectedConfig?.defaultWidget || props.widgets.default;
+  const showMenu = !window?.InjectedConfig?.hideMenu;
   const setWidgetSrc = props.setWidgetSrc;
   const viewSourceWidget = props.widgets.viewSource;
 
@@ -31,8 +36,8 @@ export default function ViewPage(props) {
       );
     }, 1);
   }, [src, query, setWidgetSrc, viewSourceWidget]);
-  console.log("src", src);
-  return (
+
+  return showMenu ? (
     <div className="container-xl">
       <div className="row">
         <div
@@ -42,9 +47,11 @@ export default function ViewPage(props) {
             paddingTop: "var(--body-top-padding)",
           }}
         >
-          <Widget key={src} src={src} props={widgetProps} />{" "}
+          <Widget key={src} src={src} props={widgetProps} />
         </div>
       </div>
     </div>
+  ) : (
+    <Widget key={src} src={src} props={widgetProps} />
   );
 }
