@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Widget } from "near-flipside-vm";
+import { Widget } from "near-social-vm";
 import { useParams } from "react-router-dom";
 import { useQuery } from "../hooks/useQuery";
 import { useHashRouterLegacy } from "../hooks/useHashRouterLegacy";

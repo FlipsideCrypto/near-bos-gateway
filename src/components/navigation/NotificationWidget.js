@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { Widget } from "near-flipside-vm";
+import { Widget } from "near-social-vm";
 
 const StyledNotificationWidget = styled.div`
   margin: 0 15px;

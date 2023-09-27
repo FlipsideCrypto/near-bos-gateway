@@ -1,6 +1,6 @@
 import { Nav } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
-import { useAccountId, useCache, useNear } from "near-flipside-vm";
+import { useAccountId, useCache, useNear } from "near-social-vm";
 
 export const Filetype = {
   Widget: "widget",
@@ -82,8 +82,8 @@ export function FileTab(props) {
   }, [localCode, chainCode]);
 
   useEffect(() => {
-    updateSaved && updateSaved(jp, !saved);
-  }, [saved, updateSaved]);
+    updateSaved && updateSaved(jp, !saved, localCode);
+  }, [saved, updateSaved, localCode]);
 
   return (
     <Nav.Item>

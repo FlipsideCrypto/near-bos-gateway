@@ -3,14 +3,14 @@ import ls from "local-storage";
 import prettier from "prettier";
 import parserBabel from "prettier/parser-babel";
 import { useHistory, useParams } from "react-router-dom";
-import Editor from "@monaco-editor/react";
+import Editor, { useMonaco } from "@monaco-editor/react";
 import {
   Widget,
   useCache,
   useNear,
   CommitButton,
   useAccountId,
-} from "near-flipside-vm";
+} from "near-social-vm";
 import { Nav, OverlayTrigger, Tooltip } from "react-bootstrap";
 import RenameModal from "../components/Editor/RenameModal";
 import OpenModal from "../components/Editor/OpenModal";
@@ -22,10 +22,12 @@ import {
   toPath,
 } from "../components/Editor/FileTab";
 import { useHashRouterLegacy } from "../hooks/useHashRouterLegacy";
+import vmTypesDeclaration from "raw-loader!near-social-vm-types";
 
 const LsKey = "social.near:v01:";
 const EditorLayoutKey = LsKey + "editorLayout:";
 const WidgetPropsKey = LsKey + "widgetProps:";
+const EditorUncommittedPreviewsKey = LsKey + "editorUncommittedPreviews:";
 
 const DefaultEditorCode = "return <div>Hello World</div>;";
 
@@ -55,6 +57,10 @@ export default function EditorPage(props) {
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [showOpenModal, setShowOpenModal] = useState(false);
   const [allSaved, setAllSaved] = useState({});
+  const [uncommittedPreviews, setUncommittedPreviews] = useState(
+    ls.get(EditorUncommittedPreviewsKey) ?? false
+  );
+  const [widgetConfig, setWidgetConfig] = useState(undefined);
 
   const [renderCode, setRenderCode] = useState(code);
   const [widgetProps, setWidgetProps] = useState(
@@ -71,6 +77,18 @@ export default function EditorPage(props) {
   const [layout, setLayoutState] = useState(
     ls.get(EditorLayoutKey) || Layout.Tabs
   );
+  const [previewKey, setPreviewKey] = useState("");
+
+  const monaco = useMonaco();
+
+  useEffect(() => {
+    if (monaco) {
+      monaco.languages.typescript.javascriptDefaults.setEagerModelSync(true);
+      monaco.languages.typescript.javascriptDefaults.addExtraLib(
+        vmTypesDeclaration
+      );
+    }
+  }, [monaco]);
 
   const setLayout = useCallback(
     (layout) => {
@@ -181,9 +199,9 @@ export default function EditorPage(props) {
     [updateCode, addToFiles]
   );
 
-  const updateSaved = useCallback((jp, saved) => {
+  const updateSaved = useCallback((jp, saved, localCode) => {
     setAllSaved((allSaved) => {
-      return Object.assign({}, allSaved, { [jp]: saved });
+      return Object.assign({}, allSaved, { [jp]: saved || localCode });
     });
   }, []);
 
@@ -321,8 +339,8 @@ export default function EditorPage(props) {
   const closeCommitted = useCallback(
     (path, allSaved) => {
       setFiles((files) => {
-        files = files.filter((file) => !allSaved[JSON.stringify(file)]);
-        if (allSaved[JSON.stringify(path)]) {
+        files = files.filter((file) => allSaved[JSON.stringify(file)] !== true);
+        if (allSaved[JSON.stringify(path)] === true) {
           if (files.length > 0) {
             openFile(files[files.length - 1], undefined);
           } else {
@@ -348,6 +366,36 @@ export default function EditorPage(props) {
     [setLayout, tab, setTab]
   );
 
+  const pathToSrc = useCallback(
+    (path) => {
+      return `${accountId}/${path?.type}/${path?.name}`;
+    },
+    [accountId]
+  );
+
+  const generateWidgetConfig = useCallback(
+    (uncommittedPreviews) => {
+      return uncommittedPreviews
+        ? {
+            redirectMap: Object.fromEntries(
+              Object.entries(allSaved)
+                .filter(([jpath, code]) => code !== true)
+                .map(([jpath, code]) => {
+                  const path = JSON.parse(jpath);
+                  return [
+                    pathToSrc(path),
+                    {
+                      code,
+                    },
+                  ];
+                })
+            ),
+          }
+        : undefined;
+    },
+    [allSaved, pathToSrc]
+  );
+
   const widgetName = path?.name;
 
   const commitButton = (
@@ -370,6 +418,12 @@ export default function EditorPage(props) {
 
   const widgetPath = `${accountId}/${path?.type}/${path?.name}`;
   const jpath = JSON.stringify(path);
+
+  const renderPreview = (code) => {
+    setWidgetConfig(generateWidgetConfig(uncommittedPreviews));
+    setRenderCode(code);
+    setPreviewKey(`preview-${Date.now()}`);
+  };
 
   return (
     <div className="container-fluid mt-1">
@@ -549,7 +603,7 @@ export default function EditorPage(props) {
                       }`}
                       aria-current="page"
                       onClick={() => {
-                        setRenderCode(code);
+                        renderPreview(code);
                         setTab(Tab.Widget);
                       }}
                     >
@@ -575,7 +629,7 @@ export default function EditorPage(props) {
                   <button
                     className="btn btn-success"
                     onClick={() => {
-                      setRenderCode(code);
+                      renderPreview(code);
                       if (layout === Layout.Tabs) {
                         setTab(Tab.Widget);
                       }
@@ -596,6 +650,7 @@ export default function EditorPage(props) {
                   </button>
                   {path && accountId && (
                     <a
+                      key="open-comp"
                       className="btn btn-outline-primary"
                       href={`/${widgetPath}`}
                       target="_blank"
@@ -604,6 +659,24 @@ export default function EditorPage(props) {
                       Open Component in a new tab
                     </a>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const v = !uncommittedPreviews;
+                      ls.set(EditorUncommittedPreviewsKey, v);
+                      setUncommittedPreviews(v);
+                      setWidgetConfig(generateWidgetConfig(v));
+                    }}
+                    className={`btn btn-outline-secondary ${
+                      uncommittedPreviews ? "active" : ""
+                    }`}
+                    data-toggle="button"
+                    aria-pressed={uncommittedPreviews}
+                    title="When enabled, the preview uses uncommitted code from all opened files"
+                  >
+                    <i className="bi bi-asterisk"></i> Multi-file previews (
+                    {uncommittedPreviews ? "ON" : "OFF"})
+                  </button>
                 </div>
               </div>
               <div className={`${tab === Tab.Props ? "" : "visually-hidden"}`}>
@@ -658,7 +731,8 @@ export default function EditorPage(props) {
                   <div className="d-inline-block position-relative overflow-hidden">
                     {renderCode ? (
                       <Widget
-                        key={`preview-${jpath}`}
+                        key={`${previewKey}-${jpath}`}
+                        config={widgetConfig}
                         code={renderCode}
                         props={parsedWidgetProps}
                       />
